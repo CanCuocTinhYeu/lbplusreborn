@@ -115,9 +115,6 @@ object LiquidBounce {
         moduleManager = ModuleManager()
         moduleManager.registerModules()
 
-        DictUtils.init()
-        ChangelogUtils.update()
-
         // Remapper
         try {
             loadSrg()

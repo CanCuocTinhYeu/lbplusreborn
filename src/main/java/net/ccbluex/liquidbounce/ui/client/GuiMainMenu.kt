@@ -2,11 +2,9 @@ package net.ccbluex.liquidbounce.ui.client
 
 import net.ccbluex.liquidbounce.ui.client.altmanager.GuiAltManager
 import net.ccbluex.liquidbounce.ui.font.Fonts
-import net.ccbluex.liquidbounce.utils.ChangelogUtils
 import net.ccbluex.liquidbounce.utils.Translate
 import net.minecraft.client.gui.*
 import java.awt.Color
-
 
 class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
     private var translate: Translate? = null
@@ -30,7 +28,6 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
     }
 
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
-
         drawBackground(0)
         hue += 1f
         if (hue > 255.0f) {
@@ -38,34 +35,8 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         }
         translate?.interpolate(width.toFloat(), height.toFloat(), 4.0)
 
-        val font = Fonts.fontSFUI35
-        val maxBuildIDLength = font.getStringWidth(ChangelogUtils.changes.map { it.first }.maxByOrNull { font.getStringWidth(it) } ?: return)
-        val maxLength = font.getStringWidth(ChangelogUtils.changes.map { it.second }.maxByOrNull { font.getStringWidth(it) } ?: return) + maxBuildIDLength + 10f
-        val fontHeight = font.FONT_HEIGHT
-
-        if (maxLength <= width * 0.45f) {
-            Fonts.fontSFUI40.drawStringWithShadow("Changelog:", 5f, 5f, Color(255, 255, 255, 220).rgb)
-            for (i in ChangelogUtils.changes.indices) {
-                val buildID = ChangelogUtils.changes[i].first
-                val buildMsg = ChangelogUtils.changes[i].second
-                font.drawStringWithShadow(
-                    buildID,
-                    3f + 5f,
-                    17f + i * fontHeight,
-                    Color(255, 255, 255, 220).rgb
-                )
-                font.drawStringWithShadow(
-                    buildMsg,
-                    3f + 10f + maxBuildIDLength,
-                    17f + i * fontHeight,
-                    Color(255, 255, 255, 220).rgb
-                )
-            }
-        }
-
         super.drawScreen(mouseX, mouseY, partialTicks)
     }
-
 
     override fun actionPerformed(button: GuiButton) {
         when (button.id) {
@@ -78,6 +49,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
             6 -> mc.shutdown()
         }
     }
+
     override fun keyTyped(typedChar: Char, keyCode: Int) {
         when (typedChar) {
             's' -> mc.displayGuiScreen(GuiSelectWorld(this))

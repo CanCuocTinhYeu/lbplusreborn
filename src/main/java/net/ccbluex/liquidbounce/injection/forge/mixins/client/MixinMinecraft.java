@@ -5,8 +5,6 @@
  */
 package net.ccbluex.liquidbounce.injection.forge.mixins.client;
 
-import cc.paimonmc.viamcp.ViaMCP;
-import cc.paimonmc.viamcp.utils.AttackOrder;
 import com.google.common.collect.Queues;
 import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.event.*;
@@ -161,12 +159,10 @@ public abstract class MixinMinecraft {
 
     @Shadow
     public abstract IResourceManager getResourceManager();
-
+    
     @Inject(method = "<init>", at = @At("RETURN"))
     public void injectConstructor(GameConfiguration p_i45547_1_, CallbackInfo ci) {
-            ViaMCP.staticInit();
     }
-
 
     @Shadow
     private PlayerUsageSnooper usageSnooper = new PlayerUsageSnooper("client", (IPlayerUsage) this, MinecraftServer.getCurrentTimeMillis());
@@ -499,23 +495,6 @@ public abstract class MixinMinecraft {
 
         if (LiquidBounce.moduleManager.getModule(AutoClicker.class).getState())
             leftClickCounter = 0;
-    }
-
-    @Redirect(
-            method = "clickMouse",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;swingItem()V")
-    )
-    private void fixAttackOrder_VanillaSwing() {
-        AttackOrder.sendConditionalSwing(this.objectMouseOver);
-    }
-
-
-    @Redirect(
-            method = "clickMouse",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerControllerMP;attackEntity(Lnet/minecraft/entity/player/EntityPlayer;Lnet/minecraft/entity/Entity;)V")
-    )
-    public void fixAttackOrder_VanillaAttack(PlayerControllerMP controller, EntityPlayer player, Entity e) {
-        AttackOrder.sendFixedAttack(this.thePlayer, this.objectMouseOver.entityHit);
     }
 
     @Inject(method = "middleClickMouse", at = @At("HEAD"))

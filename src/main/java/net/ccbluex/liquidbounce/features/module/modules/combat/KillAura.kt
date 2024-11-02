@@ -1,13 +1,5 @@
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import cc.paimonmc.viamcp.ViaMCP
-import cc.paimonmc.viamcp.protocols.ProtocolCollection
-import cc.paimonmc.viamcp.utils.AttackOrder
-import com.viaversion.viaversion.api.Via
-import com.viaversion.viaversion.api.protocol.packet.PacketWrapper
-import com.viaversion.viaversion.api.type.Type
-import de.gerrygames.viarewind.protocol.protocol1_8to1_9.Protocol1_8TO1_9
-import de.gerrygames.viarewind.utils.PacketUtil
 import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
@@ -173,7 +165,6 @@ class KillAura : Module() {
     private val autoBlockMode by ListValue("AutoBlock", arrayOf("None", "Vanilla","HypixelBlink"), "None")
     private val verusAutoBlockValue by BoolValue("VerusAutoBlock", false) { autoBlockMode == "Vanilla" }
     private val interactAutoBlockValue by BoolValue("InteractAutoBlock", false) { autoBlockMode == "Vanilla" }
-    private val sendsShieldPacket by BoolValue("SendsShieldPacket(ViaAutoBlock)", false) { autoBlockMode == "Vanilla" }
     private val blockRate by IntegerValue("BlockRate", 100, 1,100) { autoBlockMode == "Vanilla" }
 
     private val hitableCheck = BoolValue("HitableCheck", true)
@@ -303,39 +294,29 @@ class KillAura : Module() {
                 if (mc.thePlayer.isBlocking || blockingStatus)
                     stopBlocking()
 
-                            if (noSpamClick.get()) {
-                                if (clicks > 0) {
-                                    //LiquidBounce.eventManager.callEvent(AttackEvent(target))
-                                    if (ViaMCP.getInstance().version <= ProtocolCollection.getProtocolById(AttackOrder.VER_1_8_ID).version && getSwingRange()) {
-                                        mc.thePlayer.swingItem()
-                                    }
-                                    if (getAttackRange() && hitable) {
-                                        mc.playerController.attackEntity(mc.thePlayer, target)
-                                    }
-                                    if (ViaMCP.getInstance().version > ProtocolCollection.getProtocolById(
-                                            AttackOrder.VER_1_8_ID
-                                        ).version
-                                        && getSwingRange()
-                                    ) {
-                                        mc.thePlayer.swingItem()
-                                    }
-                                    clicks = 0
-                                }
-                            }else {
-                                while (clicks > 0) {
-                                    //LiquidBounce.eventManager.callEvent(AttackEvent(target))
-                                    if (ViaMCP.getInstance().version <= ProtocolCollection.getProtocolById(AttackOrder.VER_1_8_ID).version && getSwingRange()) {
-                                        mc.thePlayer.swingItem()
-                                    }
-                                    if (getAttackRange() && hitable) {
-                                        mc.playerController.attackEntity(mc.thePlayer, target)
-                                    }
-                                    if (ViaMCP.getInstance().version > ProtocolCollection.getProtocolById(AttackOrder.VER_1_8_ID).version && getSwingRange()) {
-                                        mc.thePlayer.swingItem()
-                                    }
-                                    clicks--
-                                }
-                            }
+                if (noSpamClick.get()) {
+                   if (clicks > 0) {
+                      //LiquidBounce.eventManager.callEvent(AttackEvent(target))
+                      if (getSwingRange()) {
+                          mc.thePlayer.swingItem()
+                      }
+                      if (getAttackRange() && hitable) {
+                          mc.playerController.attackEntity(mc.thePlayer, target)
+                      }
+                      clicks = 0
+            }
+        } else {
+            while (clicks > 0) {
+               //LiquidBounce.eventManager.callEvent(AttackEvent(target))
+               if (getSwingRange()) {
+                   mc.thePlayer.swingItem()
+               }
+               if (getAttackRange() && hitable) {
+                   mc.playerController.attackEntity(mc.thePlayer, target)
+               }
+               clicks--
+               }
+            }
 
                 if (autoBlockMode == "Vanilla" && canBlock) {
                     startBlocking(target!!, interactAutoBlockValue)
@@ -630,12 +611,6 @@ class KillAura : Module() {
     private fun startBlocking(interactEntity: Entity, interact: Boolean) {
 
         if (!(blockRate > 0 && RandomUtils.nextInt(0,100) <= blockRate)) return
-
-        if (sendsShieldPacket) {
-            val useItem = PacketWrapper.create(29, null, Via.getManager().connectionManager.connections.iterator().next())
-            useItem.write(Type.VAR_INT, 1)
-            PacketUtil.sendToServer(useItem, Protocol1_8TO1_9::class.java, true, true)
-        }
 
         PacketUtils.sendPacketNoEvent(C08PacketPlayerBlockPlacement(mc.thePlayer.inventory.getCurrentItem()))
         blockingStatus = true
